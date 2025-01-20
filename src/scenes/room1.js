@@ -1,3 +1,4 @@
+import { makedrone } from "../entities/drone";
 import { makePlayer } from "../entities/player";
 import { k } from "../kaboomctx";
 import {
@@ -46,6 +47,12 @@ export function room1(k, roomData) {
       player.setControls();
       player.setEvents();
       player.enablePassThrough();
+      continue;
+    }
+    if (position.type === "drone") {
+      const drone = map.add(makedrone(k, k.vec2(position.x, position.y)));
+      drone.setBehavior();
+      drone.setEvents();
     }
   }
 }
