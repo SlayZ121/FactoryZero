@@ -1,5 +1,7 @@
+import { makeBoss } from "../entities/boss";
 import { makedrone } from "../entities/drone";
 import { makePlayer } from "../entities/player";
+import { state } from "../state/globalStateManage";
 import { k } from "../kaboomctx";
 import {
   setBGColor,
@@ -53,6 +55,12 @@ export function room1(k, roomData) {
       const drone = map.add(makedrone(k, k.vec2(position.x, position.y)));
       drone.setBehavior();
       drone.setEvents();
+      continue;
+    }
+    if (position.name === "boss" && !state.current().BossDefeated) {
+      const boss = map.add(makeBoss(k, k.vec2(position.x, position.y)));
+      boss.setBehavior();
+      boss.setEvents();
     }
   }
 }

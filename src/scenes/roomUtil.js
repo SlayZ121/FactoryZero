@@ -1,4 +1,5 @@
-import { state } from "../state/globalStateManage";
+import { state, statePropsEnum } from "../state/globalStateManage";
+
 export function setBGColor(k, hexc) {
   k.add([
     k.rect(k.width(), k.height()),
@@ -28,9 +29,87 @@ export function setMapColliders(k, map, colliders) {
       continue;
     }
     if (collider.name === "boss-barrier") {
-      // const bossBarrier=map.add([
+      const bossBarrier = map.add([
+        k.rect(collider.width, collider.height),
+        k.color(k.Color.fromHex("#eacfba")),
+        k.pos(collider.x, collider.y),
+        k.area({
+          collisionIgnore: ["collider"],
+        }),
+        k.opacity(0),
+        "boss-barrier",
+        {
+          activate() {
+            k.tween(
+              this.opacity,
+              0.3,
+              1,
+              (val) => (this.opacity = val),
+              k.easings.linear
+            );
 
-      // ])
+            k.tween(
+              k.camPos().x,
+              collider.properties[0].value,
+              1,
+              (val) => k.camPos(val, k.camPos().y),
+              k.easings.linear
+            );
+          },
+
+          async deactivate(playerpos) {
+            k.tween(
+              this.opacity,
+              0,
+              1,
+              (val) => (this.opacity = val),
+              k.easings.linear
+            );
+
+            await k.tween(
+              k.camPos().x,
+              playerpos,
+              1,
+              (val) => k.camPos(val, k.camPos().y),
+              k.easings.linear
+            );
+            k.destroy(this);
+          },
+        },
+      ]);
+
+      bossBarrier.onCollide("player", async (player) => {
+        const current = state.current();
+        if (current.isBossDefeated) {
+          state.set(statePropsEnum.playerInBossFight, false);
+          bossBarrier.deactivate(player.pos.x);
+          return;
+        }
+
+        if (current.playerInBossFight) return;
+
+        player.disableControls();
+        player.play("idle");
+        await k.tween(
+          player.pos.x,
+          player.pos.x + 25,
+          0.2,
+          (val) => (player.pos.x = val), //cant move until this done
+          k.easings.linear
+        );
+
+        player.setControls();
+      });
+
+      bossBarrier.onCollideEnd("player", () => {
+        const current = state.current();
+        if (current.playerInBossFight || current.BossDefeated) return;
+
+        state.set(statePropsEnum.playerInBossFight, true);
+        bossBarrier.activate();
+        bossBarrier.use(k.body({ isStatic: true }));
+      });
+
       continue;
     }
 

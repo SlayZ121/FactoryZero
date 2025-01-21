@@ -1,4 +1,5 @@
-import { state } from "../state/globalStateManage";
+import { state, statePropsEnum } from "../state/globalStateManage";
+import { makeBlink } from "./sharedLogic";
 
 export function makePlayer(k) {
   //add-creates and displays. k.make->only creates it
@@ -105,6 +106,12 @@ export function makePlayer(k) {
           })
         );
       },
+      disableControls() {
+        for (const handler of this.controlHandlers) {
+          handler.cancel();
+        }
+      },
+      respawn(boundVal, dest, prevData = { exitName: null }) {},
       setEvents() {
         this.onFall(() => {
           this.play("fall");
@@ -119,6 +126,29 @@ export function makePlayer(k) {
         this.onHeadbutt(() => {
           this.play("fall");
         });
+
+        this.on("heal", () => {
+          state.set(statePropsEnum.playerHp, this.hp());
+        });
+
+        this.on("hurt", () => {
+          makeBlink(k, this);
+          if (this.hp() > 0) {
+            state.set(statePropsEnum.playerHp, this.hp());
+            return;
+          }
+          k.play("boom");
+          this.play("explode");
+          state.set(statePropsEnum.playerHp, state.current().maxPlayerHp);
+          this.onAnimEnd((anim) => {
+            if (anim === "explode") {
+              k.go("room1");
+            }
+          });
+        });
+      },
+      enableDoubleJump() {
+        this.numJumps = 2;
       },
     },
   ]);

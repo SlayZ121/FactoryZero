@@ -1,3 +1,4 @@
+import { state } from "../state/globalStateManage";
 export function makedrone(k, initialPos) {
   return k.make([
     k.pos(initialPos),
@@ -82,7 +83,9 @@ export function makedrone(k, initialPos) {
           if (player.isAttacking) return;
           this.hurt(1);
           player.hurt(1);
-          console.log(player.health);
+          // Update state to reflect reduced health
+
+          console.log("Player Health:", player.hp());
         });
 
         this.onAnimEnd((anim) => {
