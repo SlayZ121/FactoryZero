@@ -1,4 +1,5 @@
 import { state, statePropsEnum } from "../state/globalStateManage";
+import { healthbar } from "../ui/healthbar";
 import { makeBlink } from "./sharedLogic";
 
 export function makePlayer(k) {
@@ -111,7 +112,13 @@ export function makePlayer(k) {
           handler.cancel();
         }
       },
-      respawn(boundVal, dest, prevData = { exitName: null }) {},
+      respawn(boundVal, dest, prevData = { exitName: null }) {
+        k.onUpdate(()=>{
+          if(this.pos.y>boundVal){
+            k.go(dest,prevData);
+          }
+        })
+      },
       setEvents() {
         this.onFall(() => {
           this.play("fall");
@@ -129,6 +136,8 @@ export function makePlayer(k) {
 
         this.on("heal", () => {
           state.set(statePropsEnum.playerHp, this.hp());
+          healthbar.trigger("update");
+          return;
         });
 
         this.on("hurt", () => {

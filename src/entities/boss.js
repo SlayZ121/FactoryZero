@@ -104,6 +104,7 @@ export function makeBoss(k, initialpos) {
             this.unuse("body");
             k.play("boom");
             this.play("explode");
+
             state.set(statePropsEnum.BossDefeated, true);
             state.set(statePropsEnum.isDoubleJumpUnlocked, true);
             player.enableDoubleJump();

@@ -9,6 +9,8 @@ import {
   setCameraZone,
   setMapColliders,
 } from "./roomUtil";
+import { makecartridge } from "../entities/cartridge";
+import { healthbar } from "../ui/healthbar";
 
 export function room1(k, roomData) {
   setBGColor(k, "#a2aed5");
@@ -49,6 +51,7 @@ export function room1(k, roomData) {
       player.setControls();
       player.setEvents();
       player.enablePassThrough();
+      player.respawn(1000, "room1");
       continue;
     }
     if (position.type === "drone") {
@@ -61,6 +64,14 @@ export function room1(k, roomData) {
       const boss = map.add(makeBoss(k, k.vec2(position.x, position.y)));
       boss.setBehavior();
       boss.setEvents();
+      continue;
+    }
+    if (position.type === "cartridge") {
+      map.add(makecartridge(k, k.vec2(position.x, position.y)));
     }
   }
+
+  healthbar.setEvents();
+  healthbar.trigger("update");
+  k.add(healthbar);
 }

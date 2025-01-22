@@ -80,7 +80,7 @@ export function setMapColliders(k, map, colliders) {
 
       bossBarrier.onCollide("player", async (player) => {
         const current = state.current();
-        if (current.isBossDefeated) {
+        if (current.BossDefeated) {
           state.set(statePropsEnum.playerInBossFight, false);
           bossBarrier.deactivate(player.pos.x);
           return;
