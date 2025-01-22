@@ -7,12 +7,13 @@ import {
   setBGColor,
   setCameraControls,
   setCameraZone,
+  setExit,
   setMapColliders,
 } from "./roomUtil";
 import { makecartridge } from "../entities/cartridge";
 import { healthbar } from "../ui/healthbar";
 
-export function room1(k, roomData) {
+export function room1(k, roomData, prevData) {
   setBGColor(k, "#a2aed5");
 
   k.camScale(4);
@@ -24,6 +25,7 @@ export function room1(k, roomData) {
   const map = k.add([k.pos(0, 0), k.sprite("room1")]);
   const colliders = [];
   const positions = [];
+  const exits = [];
   const cameras = [];
 
   for (const layer of roomLayers) {
@@ -32,6 +34,11 @@ export function room1(k, roomData) {
     }
     if (layer.name === "positions") {
       positions.push(...layer.objects);
+      continue;
+    }
+
+    if (layer.name === "exits") {
+      exits.push(...layer.objects);
       continue;
     }
 
@@ -45,8 +52,10 @@ export function room1(k, roomData) {
 
   const player = k.add(makePlayer(k));
   setCameraControls(k, player, map, roomData);
+
+  setExit(k, map, exits, "room2");
   for (const position of positions) {
-    if (position.name === "player") {
+    if (position.name === "player" && !prevData.exitName) {
       player.setPosition(position.x, position.y);
       player.setControls();
       player.setEvents();
@@ -54,6 +63,26 @@ export function room1(k, roomData) {
       player.respawn(1000, "room1");
       continue;
     }
+    if (position.name === "entrance-1" && prevData.exitName === "exit-1") {
+      player.setPosition(position.x, position.y);
+      player.setControls();
+      player.setEvents();
+      player.enablePassThrough();
+      player.respawn(1000, "room1");
+      k.camPos(player.pos);
+      continue;
+    }
+
+    if (position.name === "entrance-2" && prevData.exitName === "exit-2") {
+      player.setPosition(position.x, position.y);
+      player.setControls();
+      player.setEvents();
+      player.enablePassThrough();
+      player.respawn(1000, "room1");
+      k.camPos(player.pos);
+      continue;
+    }
+
     if (position.type === "drone") {
       const drone = map.add(makedrone(k, k.vec2(position.x, position.y)));
       drone.setBehavior();
