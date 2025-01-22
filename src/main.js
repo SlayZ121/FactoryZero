@@ -1,6 +1,7 @@
 import { k } from "./kaboomctx";
 import { room1 } from "./scenes/room1";
 import { room2 } from "./scenes/room2";
+import { setBGColor } from "./scenes/roomUtil";
 import { makeNotificationBox } from "./ui/notificationBox";
 k.loadFont("glyphmesss", "./assets/glyphmesss.ttf");
 
@@ -107,9 +108,26 @@ main();
 //need async so as to use await
 
 k.scene("intro", () => {
+  setBGColor(k, "#20214a");
+  k.add(
+    makeNotificationBox(
+      k,
+      "                            Escape the factory!\nUse Arrow keys to move, x to jump, z to attack\n                           Press Enter to Start!"
+    )
+  );
+
   k.onKeyPress("enter", () => {
+    const context = new AudioContext();
+    context.resume();
     k.go("room1", { exitName: null });
   });
+});
+
+k.scene("final-exit", () => {
+  setBGColor(k, "#20214a");
+  k.add(
+    makeNotificationBox(k, "You escaped the factory!\n  Thanks for Playing!")
+  );
 });
 
 k.go("intro");
