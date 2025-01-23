@@ -1,9 +1,9 @@
 import { state, statePropsEnum } from "../state/globalStateManage";
 
-export function setBGColor(k, hexc) {
+export function setBackgroundColor(k, hexColorCode) {
   k.add([
     k.rect(k.width(), k.height()),
-    k.color(k.Color.fromHex(hexc)),
+    k.color(k.Color.fromHex(hexColorCode)),
     k.fixed(),
   ]);
 }
@@ -28,6 +28,7 @@ export function setMapColliders(k, map, colliders) {
       ]);
       continue;
     }
+
     if (collider.name === "boss-barrier") {
       const bossBarrier = map.add([
         k.rect(collider.width, collider.height),
@@ -56,8 +57,7 @@ export function setMapColliders(k, map, colliders) {
               k.easings.linear
             );
           },
-
-          async deactivate(playerpos) {
+          async deactivate(playerPosX) {
             k.tween(
               this.opacity,
               0,
@@ -65,10 +65,9 @@ export function setMapColliders(k, map, colliders) {
               (val) => (this.opacity = val),
               k.easings.linear
             );
-
             await k.tween(
               k.camPos().x,
-              playerpos,
+              playerPosX,
               1,
               (val) => k.camPos(val, k.camPos().y),
               k.easings.linear
@@ -79,33 +78,33 @@ export function setMapColliders(k, map, colliders) {
       ]);
 
       bossBarrier.onCollide("player", async (player) => {
-        const current = state.current();
-        if (current.BossDefeated) {
+        const currentState = state.current();
+        if (currentState.isBossDefeated) {
           state.set(statePropsEnum.playerInBossFight, false);
           bossBarrier.deactivate(player.pos.x);
           return;
         }
 
-        if (current.playerInBossFight) return;
-
+        if (currentState.playerInBossFight) return;
         player.disableControls();
         player.play("idle");
         await k.tween(
           player.pos.x,
           player.pos.x + 25,
           0.2,
-          (val) => (player.pos.x = val), //cant move until this done
+          (val) => (player.pos.x = val),
           k.easings.linear
         );
-
         player.setControls();
       });
 
       bossBarrier.onCollideEnd("player", () => {
-        const current = state.current();
-        if (current.playerInBossFight || current.BossDefeated) return;
+        const currentState = state.current();
+        if (currentState.playerInBossFight || currentState.isBossDefeated)
+          return;
 
         state.set(statePropsEnum.playerInBossFight, true);
+
         bossBarrier.activate();
         bossBarrier.use(k.body({ isStatic: true }));
       });
@@ -119,8 +118,7 @@ export function setMapColliders(k, map, colliders) {
         shape: new k.Rect(k.vec2(0), collider.width, collider.height),
         collisionIgnore: ["collider"],
       }),
-      k.body({ isStatic: true }), //acts as obstacle wont move
-
+      k.body({ isStatic: true }),
       "collider",
       collider.type,
     ]);
@@ -135,7 +133,7 @@ export function setCameraControls(k, player, map, roomData) {
       k.camPos(map.pos.x + 160, k.camPos().y);
       return;
     }
-    //restricting boundaries while in boss fight
+
     if (player.pos.x > map.pos.x + roomData.width * roomData.tilewidth - 160) {
       k.camPos(
         map.pos.x + roomData.width * roomData.tilewidth - 160,
@@ -143,11 +141,12 @@ export function setCameraControls(k, player, map, roomData) {
       );
       return;
     }
+
     k.camPos(player.pos.x, k.camPos().y);
   });
 }
 
-export function setCameraZone(k, map, cameras) {
+export function setCameraZones(k, map, cameras) {
   for (const camera of cameras) {
     const cameraZone = map.add([
       k.area({
@@ -171,12 +170,13 @@ export function setCameraZone(k, map, cameras) {
   }
 }
 
-export function setExit(k, map, exits, dest) {
+export function setExitZones(k, map, exits, destinationName) {
   for (const exit of exits) {
     const exitZone = map.add([
       k.pos(exit.x, exit.y),
       k.area({
         shape: new k.Rect(k.vec2(0), exit.width, exit.height),
+        collisionIgnore: ["collider"],
       }),
       k.body({ isStatic: true }),
       exit.name,
@@ -201,7 +201,8 @@ export function setExit(k, map, exits, dest) {
         k.go("final-exit");
         return;
       }
-      k.go(dest, { exitName: exit.name });
+
+      k.go(destinationName, { exitName: exit.name });
     });
   }
 }

@@ -17,9 +17,10 @@ export function makeNotificationBox(k, content) {
       font: "glyphmesss",
       size: 32,
     }),
-    k.color(k.Color.fromHex("eacfba")),
+    k.color(k.Color.fromHex("#eacfba")),
     k.area(),
     k.anchor("center"),
   ]);
+
   return container;
 }

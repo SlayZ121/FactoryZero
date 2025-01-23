@@ -6,7 +6,6 @@ export async function makeBlink(k, entity, timespan = 0.1) {
     (val) => (entity.opacity = val),
     k.easings.linear
   );
-
   k.tween(
     entity.opacity,
     1,

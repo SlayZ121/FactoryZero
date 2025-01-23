@@ -1,11 +1,10 @@
-import { state } from "../state/globalStateManage";
-export function makedrone(k, initialPos) {
+export function makeDrone(k, initialPos) {
   return k.make([
     k.pos(initialPos),
     k.sprite("drone", { anim: "flying" }),
     k.area({ shape: new k.Rect(k.vec2(0), 12, 12) }),
     k.anchor("center"),
-    k.body({ gravityScale: 0 }), //since it has to fly and all
+    k.body({ gravityScale: 0 }),
     k.offscreen({ distance: 400 }),
     k.state("patrol-right", [
       "patrol-right",
@@ -13,7 +12,7 @@ export function makedrone(k, initialPos) {
       "alert",
       "attack",
       "retreat",
-    ]), //first is default then rest of states
+    ]),
     k.health(1),
     "drone",
     {
@@ -25,12 +24,11 @@ export function makedrone(k, initialPos) {
 
         this.onStateEnter("patrol-right", async () => {
           await k.wait(3);
-          if (this.state === "patrol-right") this.enterState("patrol-left"); //changing directions
+          if (this.state === "patrol-right") this.enterState("patrol-left");
         });
 
         this.onStateUpdate("patrol-right", () => {
           if (this.pos.dist(player.pos) < this.range) {
-            //if withinr ange enter alert state instead of patrolling
             this.enterState("alert");
             return;
           }
@@ -40,12 +38,11 @@ export function makedrone(k, initialPos) {
 
         this.onStateEnter("patrol-left", async () => {
           await k.wait(3);
-          if (this.state === "patrol.left") this.enterState("patrol.right");
+          if (this.state === "patrol-left") this.enterState("patrol-right");
         });
 
         this.onStateUpdate("patrol-left", () => {
           if (this.pos.dist(player.pos) < this.range) {
-            //if withinr ange enter alert state instead of patrolling
             this.enterState("alert");
             return;
           }
@@ -59,6 +56,7 @@ export function makedrone(k, initialPos) {
             this.enterState("attack");
             return;
           }
+
           this.enterState("patrol-right");
         });
 
@@ -68,7 +66,7 @@ export function makedrone(k, initialPos) {
             return;
           }
 
-          this.flipX = player.pos.x <= this.pos.x; //player is left of drone and drone so true
+          this.flipX = player.pos.x <= this.pos.x;
           this.moveTo(
             k.vec2(player.pos.x, player.pos.y + 12),
             this.pursuitSpeed
@@ -83,9 +81,6 @@ export function makedrone(k, initialPos) {
           if (player.isAttacking) return;
           this.hurt(1);
           player.hurt(1);
-          // Update state to reflect reduced health
-
-          console.log("Player Health:", player.hp());
         });
 
         this.onAnimEnd((anim) => {
@@ -93,6 +88,7 @@ export function makedrone(k, initialPos) {
             k.destroy(this);
           }
         });
+
         this.on("explode", () => {
           k.play("boom");
           this.collisionIgnore = ["player"];
@@ -103,7 +99,9 @@ export function makedrone(k, initialPos) {
         this.onCollide("sword-hitbox", () => {
           this.hurt(1);
         });
-        //need to change opacity to make it look hurt nah?
+
+        // event defined by default by the health component
+        // when health is removed
         this.on("hurt", () => {
           if (this.hp() === 0) {
             this.trigger("explode");
@@ -111,7 +109,7 @@ export function makedrone(k, initialPos) {
         });
 
         this.onExitScreen(() => {
-          this.pos = initialPos;
+          if (this.pos.dist(initialPos) > 400) this.pos = initialPos;
         });
       },
     },

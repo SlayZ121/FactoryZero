@@ -1,6 +1,6 @@
 import { state } from "../state/globalStateManage";
 
-export function makecartridge(k, pos) {
+export function makeCartridge(k, pos) {
   const cartridge = k.make([
     k.sprite("cartridge", { anim: "default" }),
     k.area(),
@@ -15,5 +15,6 @@ export function makecartridge(k, pos) {
     }
     k.destroy(cartridge);
   });
+
   return cartridge;
 }
