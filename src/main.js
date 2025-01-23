@@ -110,7 +110,7 @@ k.scene("intro", () => {
   k.add(
     makeNotificationBox(
       k,
-      "Escape the factory!\nUse arrow keys to move, x to jump, z to attack.\nPress Enter to start!"
+      "                     Escape the factory!\nUse arrow keys to move, x to jump, z to attack.\n\n                   Press Enter to start!"
     )
   );
   k.onKeyPress("enter", () => {
